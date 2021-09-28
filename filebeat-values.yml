@@ -1,0 +1,171 @@
+app:
+  name: "filebeat"
+  configmap:
+    enabled: true
+    filebeatConfig:
+      filebeat.yml: |-
+        # To enable hints based autodiscover, remove `filebeat.inputs` configuration and uncomment this:
+        filebeat.autodiscover:
+          providers:
+            - type: kubernetes
+              node: ${NODE_NAME}
+              hints.enabled: true
+              templates:
+                - condition.and:
+                    - contains:
+                        kubernetes.namespace: "gvms"
+                    - contains:
+                        kubernetes.pod.name: "gvms"
+                  config:
+                    - type: container
+                      paths:
+                        - /var/lib/docker/containers/*/${data.kubernetes.container.id}-json.log
+                      processors:
+                        - decode_json_fields:
+                            fields: ["message"]
+                            target: ""
+                            process_array: true
+                            overwrite_keys: true
+                - condition.and:
+                    - contains:
+                        kubernetes.namespace: "gvms"
+                    - not.contains:
+                        kubernetes.pod.name: "gvms"
+                  hints.default_config:
+                    - type: container
+                      paths:
+                        - /var/lib/docker/containers/*/${data.kubernetes.container.id}-json.log
+                - condition.not:
+                      equals:
+                        kubernetes.namespace: "gvms"
+                  hints.default_config:
+                    - type: container
+                      paths:
+                        - /var/lib/docker/containers/*/${data.kubernetes.container.id}-json.log
+
+        output:
+          elasticsearch:
+            ssl.verification_mode: "none"
+
+        processors:
+              - add_cloud_metadata:
+              - add_host_metadata:
+
+        cloud.id: ${ELASTIC_CLOUD_ID}
+        cloud.auth: ${ELASTIC_CLOUD_AUTH}
+
+        output.elasticsearch:
+          hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+          username: ${ELASTICSEARCH_USERNAME}
+          password: ${ELASTICSEARCH_PASSWORD}
+  daemonset:
+    enabled: true
+    version: 7.10.0
+    image:
+      repository: "gvms-roro-docker-all-virtual.artifactory.alm.corp.hmrc.gov.uk/gvms-tool/elastic/filebeat"
+      tag: "7.10.0"
+      pullPolicy: Always
+    extraenvs:
+      - name: ELASTICSEARCH_HOST
+        value: https://elasticsearch-es-http
+      - name: ELASTICSEARCH_PORT
+        value: "9200"
+      - name: ELASTICSEARCH_USERNAME
+        value: elastic
+      - name: ELASTICSEARCH_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: elasticsearch-es-elastic-user
+            key: elastic
+    resources:
+      limits:
+        memory: 200Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+  clusterrolebinding:
+    enabled: true
+    namespace: gvms-logging
+  clusterrole:
+    enabled: true
+  serviceaccount:
+    enabled: true
+    namespace: gvms-logging
+  deployment:
+    enabled: true
+    version: 7.10.0
+    image:
+      repository: "gvms-roro-docker-all-virtual.artifactory.alm.corp.hmrc.gov.uk/gvms-tool/elastic/filebeat"
+      tag: "7.10.0"
+      pullPolicy: Always
+    extraEnvs:
+      - name: ELASTICSEARCH_HOST
+        value: https://elasticsearch-es-http
+      - name: ELASTICSEARCH_PORT
+        value: "9200"
+      - name: ELASTICSEARCH_USERNAME
+        value: elastic
+      - name: ELASTICSEARCH_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: elastic
+            name: elasticsearch-es-elastic-user
+      - name: KIBANA_HOST
+        value: https://gvms-kibana-kb-http
+      - name: KIBANA_PORT
+        value: "5601"
+      - name: AWS_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            key: rdskey
+            name: aws-access-key
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            key: rdssecretkey
+            name: aws-access-key
+    configmap:
+      enabled: true
+      filebeatConfig:
+        filebeat.yml: |
+          filebeat.inputs:
+            - type: awscloudwatch
+              log_group_name: dms-tasks-prod-ncts-dms-replication-instance-tf
+              region_name: eu-west-2
+              enabled: true
+              scan_frequency: 10m
+              start_position: beginning
+              access_key_id: '${AWS_ACCESS_KEY}'
+              secret_access_key: '${AWS_SECRET_ACCESS_KEY}'
+            - type: awscloudwatch
+              log_group_name: dms-tasks-prod-ics-dms-replication-instance-tf
+              region_name: eu-west-2
+              enabled: true
+              scan_frequency: 10m
+              start_position: beginning
+              access_key_id: '${AWS_ACCESS_KEY}'
+              secret_access_key: '${AWS_SECRET_ACCESS_KEY}'  
+            - type: log
+              enabled: true
+              log.level: debug
+              paths:
+                - /var/log/*.log
+                - /var/log/messages   
+          logging.level: debug
+          logging.to_files: true
+          logging.files:
+            path: /var/log/filebeat
+            name: filebeat
+            keepfiles: 7
+            permissions: 0644       
+          output.elasticsearch:
+            hosts: ['${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}']
+            username: ${ELASTICSEARCH_USERNAME}
+            password: ${ELASTICSEARCH_PASSWORD}
+            ssl.verification_mode: none
+          setup.kibana:
+            host: ${KIBANA_HOST:kibana}:${KIBANA_PORT:5601}
+            username: ${ELASTICSEARCH_USERNAME}
+            password: ${ELASTICSEARCH_PASSWORD}
+            ssl.verification_mode: none
+            setup.dashboards.enabled: true   

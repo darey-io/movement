@@ -1,0 +1,83 @@
+app:
+  name: "gvms-kibana"
+  deployment:
+    enabled: true
+    version: 7.10.0
+    image:
+      repository: "gvms-roro-docker-all-virtual.artifactory.alm.corp.hmrc.gov.uk/gvms-tool/elastic/kibana"
+      tag: "7.10.0"
+      pullPolicy: Always
+    service:
+      port: 5601
+    resources:
+      limits:
+        memory: "2048Mi"
+        cpu: "1000m"
+    count: 2
+    email:
+      from: "NoReply.GVMSProd@notifications.hmrc.gov.uk"
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node.app/name
+                operator: In
+                values:
+                - all
+              - key: node.app/group
+                operator: In
+                values:
+                - monitoring
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 90
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                    - elastic
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - kibana
+              topologyKey: topology.kubernetes.io/zone
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                    - elastic
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - master
+              topologyKey: "kubernetes.io/hostname"
+  ingress:
+    enabled: true
+    tls:
+      secretName: kibana-ssl
+    annotations:
+      kubernetes.io/ingress.class: "nginx-kibana"
+    host: kibana.prod.eks.gvms.p.cbit.ns2p.corp.hmrc.gov.uk
+  xpack:
+    security:
+      session:
+        idleTimeout: "20m"
+      authc:
+          providers:
+            saml:
+              saml1:
+                order: 0
+                realm: "saml1"
+                description: "Log in with Azure SSO"
+                icon: "https://kibana.prod.eks.gvms.p.cbit.ns2p.corp.hmrc.gov.uk/ui/favicons/apple-touch-icon.png"
+            basic:
+              basic1:
+                order: 1
+                description: "Log in with Columbus"

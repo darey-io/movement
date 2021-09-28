@@ -1,0 +1,210 @@
+app:
+  name: "gvms-heartbeat"
+  deployment:
+    enabled: true
+    version: 7.10.0
+    image:
+      repository: "gvms-roro-docker-all-virtual.artifactory.alm.corp.hmrc.gov.uk/gvms-tool/elastic/heartbeat"
+      tag: "7.10.0"
+      pullPolicy: Always
+    heartbeat_monitors:
+      - type: tcp
+        schedule: '@every 5s'
+        name: Elasticsearch
+        hosts: [ "elasticsearch-es-http.gvms-logging.svc:9200" ]
+      - type: tcp
+        schedule: '@every 5s'
+        name: Kibana
+        hosts: [ "gvms-kibana-kb-http.gvms-logging.svc:5601" ]
+      - type: tcp
+        schedule: '@every 5s'
+        name: GVMS-RDS
+        hosts: [ "gvms-rds-w-prod.rds.gvms.p.cbit.ns2p.corp.hmrc.gov.uk:3827" ]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Message_Receiver_Endpoint
+        hosts: [ "http://gvms-message-receiver.gvms.svc/goods-vehicle-movement-system/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Controller_Endpoint
+        hosts: [ "http://gvms-controller.gvms.svc/gmr-controller-service/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_GVM_Service_Endpoint
+        hosts: [ "http://gvms-goods-vehicle-movement-service.gvms.svc/gmr-data-service/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Notification_Endpoint
+        hosts: [ "http://gvms-notification.gvms.svc/gvms-notification-service/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Dec_Notification_Rec_Endpoint
+        hosts: [ "http://gvms-declaration-notification-receiver.gvms.svc/gvms-declaration-notification-receiver/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Dec_Controller_Endpoint
+        hosts: [ "http://gvms-declaration-controller.gvms.svc/gvms-declaration-controller-service/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Dec_Crud_Endpoint
+        hosts: [ "http://gvms-declaration-crud-service.gvms.svc/gvms-declaration-crud-service/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_GMR_State_Controller_Endpoint
+        hosts: [ "http://gvms-gmr-state-controller.gvms.svc/gmr-state-controller/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_GMR_State_Data_Service_Endpoint
+        hosts: [ "http://gvms-gmr-state-data-service.gvms.svc/gvms/gmr-state-data-service/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_CDS_CDA_Endpoint
+        hosts: [ "http://gvms-cds-cda.gvms.svc/gvms-cds-cda/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_ID_Gen_Endpoint
+        hosts: [ "http://gvms-id-gen.gvms.svc/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_PDS_Validation_Endpoint
+        hosts: [ "http://gvms-pds-validation.gvms.svc/gvms-pds-validation/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Checkin_Receiver_Endpoint
+        hosts: [ "http://gvms-gmr-checkin-receiver.gvms.svc/goods-vehicle-movement-system/movements/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Checkin_Controller_Endpoint
+        hosts: [ "http://gvms-gmr-checkin-controller.gvms.svc/gvms/gmr-checkin-controller/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Embarkation_Receiver_Endpoint
+        hosts: [ "http://gvms-embarkation-receiver.gvms.svc/goods-vehicle-movement-system/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Embarkation_Controller_Endpoint
+        hosts: [ "http://gvms-embarkation-controller.gvms.svc/gvms-embarkation-controller/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Reference_Data_Endpoint
+        hosts: [ "http://gvms-reference-data.gvms.svc/gvms/reference-data/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Chief_Edcs_Receiver_Endpoint
+        hosts: [ "http://gvms-chief-edcs-receiver.gvms.svc/goods-vehicle-movement-system/actuator/health/readiness" ]
+        check.response.status: [200]      
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_CTC_Receiver_Endpoint
+        hosts: [ "http://gvms-ctc-receiver.gvms.svc/goods-vehicle-movement-system/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Reference_Data_Client_Endpoint
+        hosts: [ "http://gvms-reference-data-client.gvms.svc/goods-vehicle-movement-system/movements/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_House_Keeping_Service
+        hosts: [ "http://gvms-housekeeping.gvms.svc/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS-Sns-Ics-Validation
+        hosts: [ "http://gvms-sns-ics-validation.gvms.svc/gvms-sns-ics-validation/actuator/health/readiness" ]
+        check.response.status: [200]  
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Sns_Validation_Endpoint
+        hosts: [ "http://gvms-sns-validation.gvms.svc/gvms-sns-validation/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Ncts_Validation_Endpoint
+        hosts: [ "http://gvms-ncts-validation-service.gvms.svc/gvms-ncts-validation-service/actuator/health/readiness" ]
+        check.response.status: [200]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_Dec_Counter_Crud_Endpoint
+        hosts: [ "http://gvms-declaration-counter-crud-service.gvms.svc/gvms-declaration-counter-crud-service/actuator/health/readiness" ]
+        check.response.status: [200]      
+      - type: tcp
+        schedule: '@every 5s'
+        name: GVMS_NCTS_DMS_Source
+        hosts: [ "gvms-dms-ncts-prod.rds.gvms.p.cbit.ns2p.corp.hmrc.gov.uk:1541" ]
+      - type: tcp
+        schedule: '@every 5s'
+        name: GVMS_ICS_DMS_Source
+        hosts: [ "gvms-dms-ics-prod.rds.gvms.p.cbit.ns2p.corp.hmrc.gov.uk:1521" ]
+      - type: tcp
+        schedule: '@every 5s'
+        name: GVMS_NCTS_DMS_Target
+        hosts: [ "gvms-rds-w-prod.rds.gvms.p.cbit.ns2p.corp.hmrc.gov.uk:3827" ]
+      - type: http
+        schedule: '@every 5s'
+        name: GVMS_NCTS_Validation_Service
+        hosts: [ "http://gvms-ncts-validation-service.gvms.svc/gvms-ncts-validation-service/actuator/health/readiness" ]
+        check.response.status: [200]
+    #- type: tcp
+    #  schedule: '@every 5s'
+    #  name: EIS
+    #  hosts: ["gvms-eis.roro.sit.n.mes.corp.hmrc.gov.uk:80"]
+    elasticsearch_data:
+      hosts: [ '${ELASTICSEARCH_HOST:elasticsearch}:${ELASTICSEARCH_PORT:9200}' ]
+      username: ${ELASTICSEARCH_USERNAME}
+      password: ${ELASTICSEARCH_PASSWORD}
+      ssl.verification_mode: "none"
+    env:
+      - name: ELASTICSEARCH_HOST
+        value: https://elasticsearch-es-http
+      - name: ELASTICSEARCH_PORT
+        value: "9200"
+      - name: ELASTICSEARCH_USERNAME
+        value: elastic
+      - name: ELASTICSEARCH_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: elasticsearch-es-elastic-user
+            key: elastic
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node.app/group
+                operator: In
+                values:
+                - monitoring
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                    - elastic
+                  - key: app.kubernetes.io/component
+                    operator: In
+                    values:
+                    - master
+              topologyKey: "kubernetes.io/hostname"
